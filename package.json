@@ -16,7 +16,7 @@
     "build": "tsup src/gridarr.ts --dts --out-dir dist"
   },
   "keywords": [
-    "grid"
+    "grid", "data", "list"
   ],
   "author": "",
   "license": "ISC",
