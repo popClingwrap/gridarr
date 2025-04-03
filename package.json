@@ -6,6 +6,7 @@
   "main": "dist/gridarr.js",
   "module": "./dist/gridarr.js",
   "types": "./dist/gridarr.d.ts",
+  "repository": "https://github.com/popClingwrap/gridarr",
   "files": [
     "dist"
   ],
