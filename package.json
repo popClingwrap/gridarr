@@ -1,9 +1,10 @@
 {
   "name": "gridarr",
   "version": "1.0.0",
+  "type": "module",
   "description": "Represents an Array of data as a grid and allows grid-like referencing and manipulation",
   "main": "dist/gridarr.js",
-  "module": "./dist/gridarr.mjs",
+  "module": "./dist/gridarr.js",
   "types": "./dist/gridarr.d.ts",
   "files": [
     "dist"
@@ -11,7 +12,7 @@
   "scripts": {
     "ts": "tsc -w -p .",
     "js": "node --watch index.js",
-    "build": "tsup"
+    "build": "tsup src/gridarr.ts --dts --out-dir dist"
   },
   "keywords": [
     "grid"
@@ -20,7 +21,6 @@
   "license": "ISC",
   "devDependencies": {
     "tsup": "^8.4.0",
-    "typedoc": "^0.28.1",
     "typescript": "^5.8.2"
   }
 }
