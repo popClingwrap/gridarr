@@ -1,6 +1,6 @@
 {
   "name": "gridarr",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "Represents an Array of data as a grid and allows grid-like referencing and manipulation",
   "main": "dist/gridarr.js",
@@ -16,7 +16,9 @@
     "build": "tsup src/gridarr.ts --dts --out-dir dist"
   },
   "keywords": [
-    "grid", "data", "list"
+    "grid",
+    "data",
+    "list"
   ],
   "author": "",
   "license": "ISC",
