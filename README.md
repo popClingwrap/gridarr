@@ -1,7 +1,7 @@
 # Class : GridArr\<T\>
 
 A generic class that represents an Array as a grid.
-A Gridarr instance can contain any kind of data with items in the grid being wrapped in GridCell instances
+A Gridarr instance can contain any kind of data with items in the grid being wrapped in GridArrCell instances
 
 ## Example Usage
 
@@ -16,9 +16,9 @@ const grid:GridArr = new Gridarr<number>({
 
 **Reading a cell value**   
 This example retrieves that value of the top left cell from the grid we just created.
-Each data item passed to the original grid is wrapped in a GridCell instance. To get the original value we use `.instance`
+Each data item passed to the original grid is wrapped in a GridArrCell instance. To get the original value we use `.instance`
 ```ts
-const cell:GridCell = grid.cell(0,0);
+const cell:GridArrCell = grid.cell(0,0);
 console.log(cell.contents);//1
 ```
 
@@ -27,7 +27,7 @@ When creating a new Gridarr you should provide a config object to give your grid
 There are several available properties and not all are required for every grid.
 ```ts
 type GridConfig<T> = {
-    items?: T[]|GridCell<T>[];
+    items?: T[]|GridArrCell<T>[];
     rowCount?: number;
     colCount?: number;
     overflowX?:string;
@@ -38,7 +38,7 @@ type GridConfig<T> = {
 ```
 
 ## items
-An Array of data that forms the basis of the grid. Each item in the array will be wrapped in a GridCell instance.
+An Array of data that forms the basis of the grid. Each item in the array will be wrapped in a GridArrCell instance.
 ```ts
 const g = new GridArr<number>({
     items:[1,2,3,4,5,6,7,8,9]
@@ -127,17 +127,17 @@ const g = new GridArr<number>({
 ``` 
 # GridArr methods
 
-## `cell(x:number, y:number, aOverflowX?:string, aOverflowY?:string) :GridCell<T>`
-Takes a column id (x) and a row id (y) and returns the `GridCell` from that location.   
+## `cell(x:number, y:number, aOverflowX?:string, aOverflowY?:string) :GridArrCell<T>`
+Takes a column id (x) and a row id (y) and returns the `GridArrCell` from that location.   
 The optional overflow params allow for a particular call to override the overflow setting of the grid. If left undefined the grid setting will always be used.
 
-## `col(idx:number) :GridCell<T>[]`
+## `col(idx:number) :GridArrCell<T>[]`
 Takes a column id and returns an Array of the cells that make up that column.
 
-## `row(idx:number) :GridCell<T>[]`
+## `row(idx:number) :GridArrCell<T>[]`
 Takes a row id and returns an Array of the cells that make up that column.
 
-## `area(x:number,y:number,w:number,h:number) :GridCell<T>[]`
+## `area(x:number,y:number,w:number,h:number) :GridArrCell<T>[]`
 The params describe a rectangular area of the grid. This rectangle starts at the cell at coordinates {`x`,`Y`}, is `w` cells wide and `y` cells high.   
 The optional overflow params allow for a particular call to override the overflow setting of the grid. If left undefined the grid setting will always be used.
 
@@ -149,19 +149,19 @@ Returns the number of columns in the grid
 ## `rowCount :number`
 Returns the number of rows in the grid
 
-## `cells :GridCell<T>[]`
+## `cells :GridArrCell<T>[]`
 
-# Class : GridCell<T>
-All grids are made up of GridCell instances. When you pass contents to a grid, either via the `items` config param or via a `filler` function, that contants is wrapped in a GridCell.   
-The GridCell simply adds some properties that make mutating the grid easier internally.   
-**NOTE** - You should never need to manually create a GridCell
+# Class : GridArrCell<T>
+All grids are made up of GridArrCell instances. When you pass contents to a grid, either via the `items` config param or via a `filler` function, that contants is wrapped in a GridArrCell.   
+The GridArrCell simply adds some properties that make mutating the grid easier internally.   
+**NOTE** - You should never need to manually create a GridArrCell
 
-# GridCell methods
-## `relativex(x:number,y:number,w:number,h:number) :GridCell<T>`
-Takes a column offset (x) and a row offset (y) and calculates a location relative to the calling GridCell. The GridCell at this new location is returned.   
+# GridArrCell methods
+## `relativex(x:number,y:number,w:number,h:number) :GridArrCell<T>`
+Takes a column offset (x) and a row offset (y) and calculates a location relative to the calling GridArrCell. The GridArrCell at this new location is returned.   
 The optional overflow params allow for a particular call to override the overflow setting of the grid. If left undefined the grid setting will always be used.
 
-#GridCell properties
+#GridArrCell properties
 
 ## gridRef
 Returns an Object shaped as `{x:number;y:number}` that is the calling cell's position within the parent grid.
@@ -170,7 +170,7 @@ Returns an Object shaped as `{x:number;y:number}` that is the calling cell's pos
 Returns the original value passed in to the cell on creation
 
 ## listIndex
-Returns the index of this GridCell in the base Array that the parent grid is based on. This is equivalent to counting the cells right to left, from top left to bottom right
+Returns the index of this GridArrCell in the base Array that the parent grid is based on. This is equivalent to counting the cells right to left, from top left to bottom right
 
 ## grid
 Returns the GridArr instance of which the calling cell is a child.
@@ -180,5 +180,5 @@ Returns the GridArr instance of which the calling cell is a child.
 ## `visualise(target, highlights?)`
 A debugging method that renders a basic visualisation of grid elements in the console.   
 If the target is a GridArr then it is dispalyed with row and column IDs.
-If the target is a GridCell or Array of GridCells then the relevant cells in the logged grid are highlighted
-If the target is a GridArr then cells can be highlighted by passing a second argument of an Array of GridCell or {x:y} Objects
+If the target is a GridArrCell or Array of GridCells then the relevant cells in the logged grid are highlighted
+If the target is a GridArr then cells can be highlighted by passing a second argument of an Array of GridArrCell or {x:y} Objects
