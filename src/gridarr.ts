@@ -195,10 +195,6 @@ export class GridArr<T>{
     get cells(){return this._items}
 }
 
-export function test(){
-    console.log('Test');
-}
-
 /**
  * All items in a GridArr instance are wrapped in a GridArrCell during creation.
  * GridArrCell items are created by GridArr and there should be no need to manually create them
