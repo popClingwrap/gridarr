@@ -1,6 +1,6 @@
 /**
  * A generic class that represents an Array as a grid.
- * A Gridarr instance can contain any kind of data with items in the grid being wrapped in GridCell instances
+ * A Gridarr instance can contain any kind of data with items in the grid being wrapped in GridArrCell instances
  * @class GridArr
  * @example
  * //Creates a 3x3 grid populated with the numbers 1-9
@@ -10,7 +10,7 @@
  * })
  */
 export class GridArr<T>{
-    private _items:GridCell<T>[] = [];
+    private _items:GridArrCell<T>[] = [];
     private _colCount:number = Number.POSITIVE_INFINITY;
     private _rowCount:number = 1;
     private overflowX:OverflowType = 'none';
@@ -57,15 +57,15 @@ export class GridArr<T>{
         //Excess items are discarded and empty spaces are filled with 'undefined'
         //undefined items will be overwritten by the filler function
         const sizedArr = config.items.slice(0, gridCellCount).concat(Array(Math.max(0, gridCellCount-config.items.length)).fill(undefined));
-        this._items = sizedArr.map((item: T|GridCell<T>, n) => {
+        this._items = sizedArr.map((item: T|GridArrCell<T>, n) => {
             const x = n % this._colCount;
             const y = Math.floor(n / this._colCount);
 
-            if(item instanceof GridCell){
-                // if(gridRefAssignment === 'inherit') return item as GridCell<T>;
+            if(item instanceof GridArrCell){
+                // if(gridRefAssignment === 'inherit') return item as GridArrCell<T>;
                 // else{
                 //     item.gridRef = {x, y};
-                    return item as GridCell<T>;
+                    return item as GridArrCell<T>;
                 // }
             }
 
@@ -74,7 +74,7 @@ export class GridArr<T>{
                 item = config.filler(x,y,n);
             }
 
-            return new GridCell(
+            return new GridArrCell(
                 item,
                 {x, y},
                 this,
@@ -84,7 +84,7 @@ export class GridArr<T>{
     }
 
     /**
-     * Returns the GridCell instance located at aX:aY
+     * Returns the GridArrCell instance located at aX:aY
      * If the supplied coord is outside the grid bounds it is overflowed based on the overflow settings of the grid.
      * A different overflow option can be passed to temporarily override the grid level setting.
      * @param aX - The X coord (grid column)
@@ -99,7 +99,7 @@ export class GridArr<T>{
     }
 
     /**
-     * Return an Array of GridCell instances corresponding to a single row of the grid
+     * Return an Array of GridArrCell instances corresponding to a single row of the grid
      * Overflow is not considered so values outside the grid bounds will throw an error
      * @param idx - A row index
      */
@@ -109,7 +109,7 @@ export class GridArr<T>{
     }
 
     /**
-     * Return an Array of GridCell instances corresponding to a single column of the grid.
+     * Return an Array of GridArrCell instances corresponding to a single column of the grid.
      * Overflow is not considered so values outside the grid bounds will throw an error
      * @param idx - A col index
      */
@@ -121,7 +121,7 @@ export class GridArr<T>{
     }
 
     /**
-     * Returns an Array or GridCell instances corresponding to a sub-area of the grid.
+     * Returns an Array or GridArrCell instances corresponding to a sub-area of the grid.
      * Areas are described as rectangles with x,y,w,h parameters but overflow settings may mean the resulting cells are not absolute neighbours
      * @param aX - X (column) coord to base the area on
      * @param aY  Y (row) coord to base the area on
@@ -130,7 +130,7 @@ export class GridArr<T>{
      * @param aOverflowX - An optional setting for how to treat X coords outside the grid
      * @param aOverflowY - An optional setting for how to treat Y coords outside the grid
      */
-    area(aX:number, aY:number, aWidth:number, aHeight:number, aOverflowX?:OverflowType, aOverflowY?:OverflowType):GridCell<T>[]{
+    area(aX:number, aY:number, aWidth:number, aHeight:number, aOverflowX?:OverflowType, aOverflowY?:OverflowType):GridArrCell<T>[]{
         aWidth = aWidth<0 ? aWidth+1 : aWidth-1;
         aHeight = aHeight<0 ? aHeight+1 : aHeight-1;
 
@@ -145,7 +145,7 @@ export class GridArr<T>{
         aWidth = Math.abs(aWidth);
         aHeight = Math.abs(aHeight);
 
-        const temp:GridCell<T>[] = [];
+        const temp:GridArrCell<T>[] = [];
         for(let r = 0; r <= aHeight; r++){
             for(let c = 0; c <= aWidth; c++){
                 // console.log(r,c)
@@ -195,13 +195,17 @@ export class GridArr<T>{
     get cells(){return this._items}
 }
 
+export function test(){
+    console.log('Test');
+}
+
 /**
- * All items in a GridArr instance are wrapped in a GridCell during creation.
- * GridCell items are created by GridArr and there should be no need to manually create them
+ * All items in a GridArr instance are wrapped in a GridArrCell during creation.
+ * GridArrCell items are created by GridArr and there should be no need to manually create them
  */
-class GridCell<T>{
+export class GridArrCell<T>{
     /**
-     * @param _contents - The supplied data that is wrapped by this GridCell instance
+     * @param _contents - The supplied data that is wrapped by this GridArrCell instance
      * @param _gridRef - Cell coord based on an origin of [0,0]
      * @param _grid - Reference to the parent grid
      * @param _listIndex - The index of this item within the base Array of all cells
@@ -214,7 +218,7 @@ class GridCell<T>{
     ){}
 
     /**
-     * Returns the GridCell instance found at a position in the grid relative to this one.
+     * Returns the GridArrCell instance found at a position in the grid relative to this one.
      * @param aX - Horizontal offset from the reference cell
      * @param aY - Vertical offset from the reference cell
      * @param aOverflowX - An optional setting for how to treat X coords outside the grid
@@ -252,7 +256,7 @@ class GridCell<T>{
  * Options to pass to a new GridArr on creation
  */
 type GridConfig<T> = {
-    items?: T[]|GridCell<T>[];
+    items?: T[]|GridArrCell<T>[];
     rowCount?: number;
     colCount?: number;
     overflowX?:OverflowType;
@@ -275,12 +279,12 @@ function clamp(n:number, a:number, b:number){
 /**
  * A debugging tool that outputs a basic visualisation of grid data to the console.
  * If the target is a GridArr then it is dispalyed with row and column IDs.
- * If the target is a GridCell or Array of GridCells then the relevant cells in the logged grid are highlighted
- * If the target is a GridArr then cells can be highlighted by passing a second argument of an Array of GridCell or {x:y} Objects
+ * If the target is a GridArrCell or Array of GridCells then the relevant cells in the logged grid are highlighted
+ * If the target is a GridArr then cells can be highlighted by passing a second argument of an Array of GridArrCell or {x:y} Objects
  * @param target - The data to visualise
  * @param highlights - The cells to highlight if the target is a GridArr instance
  */
-export function visualise(target:GridArr<any>|GridCell<any>|GridCell<any>[], highlights?:(GridCell<any>|GridRef)[]){
+export function visualise(target:GridArr<any>|GridArrCell<any>|GridArrCell<any>[], highlights?:(GridArrCell<any>|GridRef)[]){
     //Set the grid based on whatever has been passed as a target
     const grid = target instanceof GridArr ? target
         : Array.isArray(target) ? target[0].grid
@@ -288,7 +292,7 @@ export function visualise(target:GridArr<any>|GridCell<any>|GridCell<any>[], hig
 
     //If no highlights are specified and the target is not a grid then assume the target itself is to be highlighted within its parent grid
     if(!highlights){
-        if(target instanceof GridCell) highlights = [target];
+        if(target instanceof GridArrCell) highlights = [target];
         else if(Array.isArray(target)) highlights = target;
     }
 
@@ -308,7 +312,7 @@ export function visualise(target:GridArr<any>|GridCell<any>|GridCell<any>[], hig
         let str = '\x1b[100m '+`${r}`.padStart(rowIdMaxLength, ' ')+rowLeaderSpacer+'\x1b[0m';
         for(let c = 0; c < grid.colCount; c++){
             const highlight = highlights?.find(i=>{
-                if(i instanceof GridCell)
+                if(i instanceof GridArrCell)
                     return i.gridRef.x === c && i.gridRef.y === r;
                 else
                     return i.x === c && i.y === r;
