@@ -1,6 +1,6 @@
 {
   "name": "gridarr",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "description": "Represents an Array of data as a grid and allows grid-like referencing and manipulation",
   "main": "dist/gridarr.js",
