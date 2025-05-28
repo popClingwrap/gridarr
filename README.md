@@ -127,21 +127,27 @@ const g = new GridArr<number>({
 ``` 
 # GridArr methods
 
-## `cell(x:number, y:number, aOverflowX?:string, aOverflowY?:string) :GridArrCell<T>`
+## `cell(x:number, y:number, aOverflowX?:string, aOverflowY?:string) :GridArrCell<T> | undefined`
 Takes a column id (x) and a row id (y) and returns the `GridArrCell` from that location.   
-The optional overflow params allow for a particular call to override the overflow setting of the grid. If left undefined the grid setting will always be used.
+The optional overflow params allow for a particular call to override the overflow setting of the grid. If left undefined the grid setting will always be used.   
+If overflow is set to `none` and a cell reference outside of the valid grid area is passed (negative grid references or ones greater than the size of the grid) the `undefined` is returned.
 
-## `col(idx:number) :GridArrCell<T>[]`
+## `col(idx:number, aOverflowX?:string, aOverflowY?:string) :GridArrCell<T>[] | undefined`
 Takes a column id and returns an Array of the cells that make up that column.
+The optional overflow params allow for a particular call to override the overflow setting of the grid. If left undefined the grid setting will always be used.   
+If overflow is set to `none` and a cell reference outside of the valid grid area is passed (negative grid references or ones greater than the size of the grid) the `undefined` is returned.
 
-## `row(idx:number) :GridArrCell<T>[]`
+## `row(idx:number, aOverflowX?:string, aOverflowY?:string) :GridArrCell<T>[] | undefined`
 Takes a row id and returns an Array of the cells that make up that column.
+The optional overflow params allow for a particular call to override the overflow setting of the grid. If left undefined the grid setting will always be used.   
+If overflow is set to `none` and a cell reference outside of the valid grid area is passed (negative grid references or ones greater than the size of the grid) the `undefined` is returned.
 
-## `area(x:number,y:number,w:number,h:number) :GridArrCell<T>[]`
-The params describe a rectangular area of the grid. This rectangle starts at the cell at coordinates {`x`,`Y`}, is `w` cells wide and `y` cells high.   
-The optional overflow params allow for a particular call to override the overflow setting of the grid. If left undefined the grid setting will always be used.
+## `area(x:number,y:number,w:number,h:number, aOverflowX?:string, aOverflowY?:string) :GridArrCell<T>[] | undefined`
+The params describe a rectangular area of the grid. This rectangle starts at the cell at coordinates {`x`,`Y`}, is `w` cells wide and `y` cells high.
+The optional overflow params allow for a particular call to override the overflow setting of the grid. If left undefined the grid setting will always be used.   
+If overflow is set to `none` and a cell reference outside of the valid grid area is passed (negative grid references or ones greater than the size of the grid) the `undefined` is returned. If part of a requested area is outside the grid the invalid portion will be clipped from the returned array
 
-# `GridArr properties`
+# GridArr properties
 
 ## `colCount :number`
 Returns the number of columns in the grid
