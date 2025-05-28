@@ -11,6 +11,7 @@
     "dist"
   ],
   "scripts": {
+    "dev": "concurrently \"tsc -w -p .\" \"live-server --open=./dev/index.html\"",
     "ts": "tsc -w -p .",
     "js": "node --watch index.js",
     "build": "tsup src/gridarr.ts --dts --out-dir dist"
@@ -23,6 +24,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "concurrently": "^9.1.2",
+    "live-server": "^1.2.2",
     "tsup": "^8.4.0",
     "typescript": "^5.8.2"
   }

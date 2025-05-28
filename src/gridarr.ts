@@ -15,12 +15,14 @@ export class GridArr<T>{
     private _rowCount:number = 1;
     private overflowX:OverflowType = 'none';
     private overflowY:OverflowType = 'none';
+    private _uid:string|number;
 
     /**
      *
      * @param config
      */
     constructor(config:GridConfig<T>){
+        this._uid = config.uid !== undefined ? config.uid : (Date.now()+(Math.round(Math.random()*10000000))).toString(36)
         config.items = config.items||[];
 
         this.overflowX = config.overflow||config.overflowX||this.overflowX;
@@ -62,11 +64,7 @@ export class GridArr<T>{
             const y = Math.floor(n / this._colCount);
 
             if(item instanceof GridArrCell){
-                // if(gridRefAssignment === 'inherit') return item as GridArrCell<T>;
-                // else{
-                //     item.gridRef = {x, y};
-                    return item as GridArrCell<T>;
-                // }
+                return item as GridArrCell<T>;
             }
 
             //Empty spaces added to pad the supplied items array are converted to a usable value by calling the supplied filler function
@@ -92,31 +90,33 @@ export class GridArr<T>{
      * @param aOverflowX - An optional setting for how tyo treat X coords outside the grid
      * @param aOverflowY - An optional setting for how tyo treat Y coords outside the grid
      */
-    cell(aX:number, aY:number, aOverflowX?:OverflowType, aOverflowY?:OverflowType){
-        const {x,y} = this.convertToValidGridIdRef(aX, aY, aOverflowX, aOverflowY);
-        if(x >= this._colCount || y >= this._rowCount) throw new Error(`Coordinate {${x}, ${y}} does not exist on this grid. Is wrapping set correctly?`)
+    cell(aX:number, aY:number, aOverflowX?:OverflowType, aOverflowY?:OverflowType):GridArrCell<T>|undefined{
+        const {x,y} = this.applyOverflowToGridRef(aX, aY, aOverflowX, aOverflowY);
+        if(x >= this._colCount || x < 0 || y >= this._rowCount || y < 0) return undefined;//throw new Error(`Coordinate {${x}, ${y}} does not exist on this grid. Is wrapping set correctly?`)
         return this._items[y*this._colCount + x];
     }
 
     /**
      * Return an Array of GridArrCell instances corresponding to a single row of the grid
-     * Overflow is not considered so values outside the grid bounds will throw an error
      * @param idx - A row index
      */
-    row(idx:number){
-        if(idx >= this._rowCount) throw new Error(`Row index ${idx} is out of bounds. Only ${this._rowCount} rows exist.`)
-        return this._items.slice(idx*this._colCount, (idx+1)*this._colCount);
+    row(idx:number, aOverflowX?:OverflowType, aOverflowY?:OverflowType):GridArrCell<T>[]|undefined{
+        const {y} = this.applyOverflowToGridRef(0, idx, aOverflowX, aOverflowY);
+        if(y >= this._rowCount || y<0) return undefined;
+        return this._items.slice(y*this._colCount, (y+1)*this._colCount);
     }
 
     /**
      * Return an Array of GridArrCell instances corresponding to a single column of the grid.
-     * Overflow is not considered so values outside the grid bounds will throw an error
      * @param idx - A col index
      */
-    col(idx:number){
-        if(idx >= this._colCount) throw new Error(`Col index ${idx} is out of bounds. Only ${this._rowCount} cols exist.`)
+    col(idx:number, aOverflowX?:OverflowType, aOverflowY?:OverflowType):GridArrCell<T>[]|undefined{
+        const {x} = this.applyOverflowToGridRef(idx, 0, aOverflowX, aOverflowY);
+        if(x >= this._colCount || x < 0) return undefined;
+
+        console.log(x)
         return this._items.filter((item, idx)=>{
-            return idx%this._colCount===0;
+            return idx%this._colCount===x;
         });
     }
 
@@ -130,30 +130,34 @@ export class GridArr<T>{
      * @param aOverflowX - An optional setting for how to treat X coords outside the grid
      * @param aOverflowY - An optional setting for how to treat Y coords outside the grid
      */
-    area(aX:number, aY:number, aWidth:number, aHeight:number, aOverflowX?:OverflowType, aOverflowY?:OverflowType):GridArrCell<T>[]{
+    area(aX:number, aY:number, aWidth:number, aHeight:number, aOverflowX?:OverflowType, aOverflowY?:OverflowType):GridArrCell<T>[]|undefined{
         aWidth = aWidth<0 ? aWidth+1 : aWidth-1;
         aHeight = aHeight<0 ? aHeight+1 : aHeight-1;
 
-        const {x,y} = this.convertToValidGridIdRef(
+        const {x,y} = this.applyOverflowToGridRef(
             aX+Math.min(aWidth, 0),
             aY+Math.min(aHeight, 0),
             aOverflowX,
             aOverflowY
         );
 
-        const c0 = this.cell(x,y);
-        aWidth = Math.abs(aWidth);
-        aHeight = Math.abs(aHeight);
+        const c0:GridArrCell<T>|undefined = this.cell(x,y);
+        if(c0){
+            aWidth = Math.abs(aWidth);
+            aHeight = Math.abs(aHeight);
 
-        const temp:GridArrCell<T>[] = [];
-        for(let r = 0; r <= aHeight; r++){
-            for(let c = 0; c <= aWidth; c++){
-                // console.log(r,c)
-                temp.push(c0.relative(c,r, aOverflowX, aOverflowY));
+            const temp:(GridArrCell<T>|undefined)[] = [];
+            for(let r = 0; r <= aHeight; r++){
+                for(let c = 0; c <= aWidth; c++){
+                    temp.push(c0.relative(c,r, aOverflowX, aOverflowY));
+                }
             }
-        }
 
-        return temp;
+            return temp.filter(i=>i!==undefined);
+        }
+        else{
+            return undefined;
+        }
     }
 
     /**
@@ -163,19 +167,17 @@ export class GridArr<T>{
      * @param aOverflowX - An optional setting for how tyo treat X coords outside the grid
      * @param aOverflowY - An optional setting for how tyo treat Y coords outside the grid
      */
-    private convertToValidGridIdRef(aX:number, aY:number, aOverflowX?:OverflowType, aOverflowY?:OverflowType):GridRef{
+    private applyOverflowToGridRef(aX:number, aY:number, aOverflowX?:OverflowType, aOverflowY?:OverflowType):GridRef{
         const tempOverflowX:OverflowType = aOverflowX||this.overflowX;
         const tempOverflowY:OverflowType = aOverflowY||aOverflowX||this.overflowY;
 
-        let x = tempOverflowX === 'wrap' ? aX%this._colCount
+        let x = tempOverflowX === 'wrap' ? ((aX % this._colCount) + this._colCount) % this._colCount
             : tempOverflowX === 'constrain' ? clamp(aX, 0, this._colCount-1)
                 : aX;
-        let y = tempOverflowY === 'wrap' ? aY%this._rowCount
+        let y = tempOverflowY === 'wrap' ? ((aY % this._rowCount) + this._rowCount) % this._rowCount
             : tempOverflowY === 'constrain' ? clamp(aY, 0, this._rowCount-1)
                 : aY;
 
-        x = x<0 ? this._colCount+x : x;
-        y = y<0 ? this._rowCount+y : y;
         return {x,y};
     }
 
@@ -193,6 +195,8 @@ export class GridArr<T>{
      * returns the Array of all cells in the grid
      */
     get cells(){return this._items}
+
+    get uid(){return this._uid;}
 }
 
 /**
@@ -258,7 +262,8 @@ type GridConfig<T> = {
     overflowX?:OverflowType;
     overflowY?:OverflowType;
     overflow?:OverflowType;
-    filler?:(col:number, row:number, idx:number)=>T
+    filler?:(col:number, row:number, idx:number)=>T,
+    uid?:string|number
 }
 
 type OverflowType = 'none'|'wrap'|'constrain';
@@ -315,7 +320,7 @@ export function visualise(target:GridArr<any>|GridArrCell<any>|GridArrCell<any>[
             });
 
             if(highlight) str += '\x1b[31m';
-            str += grid.cell(c,r).listIndex.toString().padStart(cellIdMaxLength+1, ' ');
+            str += grid.cell(c,r)!.listIndex.toString().padStart(cellIdMaxLength+1, ' ');
             if(highlight) str += '\x1b[0m';
         }
 

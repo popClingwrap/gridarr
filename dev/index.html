@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GrridArr Test Page</title>
+</head>
+<body>
+
+</body>
+<script type="module">
+    import { GridArr, visualise } from '../dist/gridarr.js';
+
+    const gData = Array(25).fill(0).map((i,n)=>n);
+    const g = new GridArr({
+        items:gData,
+        colCount: 5,
+        overflow:'wrap'
+    })
+
+    let c = g.cell(-2,-2);
+    let r = g.row(5)
+    console.log(r)
+    visualise(g);
+</script>
+</html>
