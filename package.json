@@ -1,32 +1,44 @@
 {
   "name": "gridarr",
-  "version": "1.2.1",
+  "version": "2.0.0",
   "type": "module",
-  "description": "Represents an Array of data as a grid and allows grid-like referencing and manipulation",
-  "main": "dist/gridarr.js",
-  "module": "./dist/gridarr.js",
-  "types": "./dist/gridarr.d.ts",
-  "repository": "https://github.com/popClingwrap/gridarr",
+  "description": "Zero-dependency 2D grid engine using 1D flat buffers and lazy generators.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/popClingwrap/gridarr"
+  },
   "files": [
     "dist"
   ],
   "scripts": {
-    "dev": "concurrently \"tsc -w -p .\" \"live-server --open=./dev/index.html\"",
-    "ts": "tsc -w -p .",
-    "js": "node --watch index.js",
-    "build": "tsup src/gridarr.ts --dts --out-dir dist"
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build && npm run test"
   },
   "keywords": [
     "grid",
-    "data",
-    "list"
+    "matrix",
+    "game-engine",
+    "generators",
+    "2d",
+    "typescript"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
-    "concurrently": "^9.1.2",
-    "live-server": "^1.2.2",
-    "tsup": "^8.4.0",
-    "typescript": "^5.8.2"
+    "prettier": "^3.9.5",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.0"
   }
 }
