@@ -4,10 +4,14 @@ export interface DefaultCellData {
   index: number;
 }
 
+interface ConfigBase {
+  wrap?: Wrap;
+}
+
 /**
  * Configured with a prepopulated array of data and the width of the grid
  */
-export interface FilledArray<T = DefaultCellData> {
+export interface FilledArray<T = DefaultCellData> extends ConfigBase {
   data: T[];
   width: number;
 }
@@ -15,7 +19,7 @@ export interface FilledArray<T = DefaultCellData> {
 /**
  * Configured with the width and height of the grid and an optional method to populate the cells
  */
-export interface GridDimensions<T = DefaultCellData> {
+export interface GridDimensions<T = DefaultCellData> extends ConfigBase {
   width: number;
   height: number;
   fill?: (index: number, x: number, y: number) => T;
@@ -24,7 +28,7 @@ export interface GridDimensions<T = DefaultCellData> {
 /**
  * Cinfigured with the number of cells to create and the width of the grid
  */
-export interface CellCount<T = DefaultCellData> {
+export interface CellCount<T = DefaultCellData> extends ConfigBase {
   width: number;
   cellCount: number;
   fill?: (index: number, x: number, y: number) => T;
@@ -38,3 +42,16 @@ export interface BufferAllocationResult<T> {
   width: number;
   height: number;
 }
+
+export interface GridCoord {
+  x: number;
+  y: number;
+}
+
+export const Wrap = {
+  NONE: 'none',
+  BOTH: 'both',
+  HORIZONTAL: 'horizontal',
+  VERTICAL: 'vertical',
+} as const;
+export type Wrap = (typeof Wrap)[keyof typeof Wrap];
