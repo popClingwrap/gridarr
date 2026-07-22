@@ -32,3 +32,9 @@ export interface CellCount<T = DefaultCellData> {
 
 export type GridConfig<T = DefaultCellData> =
   FilledArray<T> | GridDimensions<T> | CellCount<T>;
+
+export interface BufferAllocationResult<T> {
+  data: T[];
+  width: number;
+  height: number;
+}

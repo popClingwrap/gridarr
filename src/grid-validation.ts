@@ -1,32 +1,14 @@
 import { CellCount, DefaultCellData } from './grid.model.js';
 import { FilledArray, GridConfig, GridDimensions } from './grid.model.js';
+import { configIsCellCount, configIsFilledArray, configIsGridDimensions } from './type-guards.js';
 
 export class ConfigValidation {
   static validate<T = DefaultCellData>(config: GridConfig<T>) {
-    if (this.configIsFilledArray(config))
+    if (configIsFilledArray(config))
       return this.validateFilledArray(config);
-    if (this.configIsGridDimensions(config))
+    if (configIsGridDimensions(config))
       return this.validateGridDimensions(config);
-    if (this.configIsCellCount(config)) return this.validateCellCount(config);
-  }
-
-  //#region Config Type Checks
-  private static configIsFilledArray<T>(
-    config: GridConfig<T>
-  ): config is FilledArray<T> {
-    return 'data' in config && config.data !== undefined;
-  }
-
-  private static configIsGridDimensions<T>(
-    config: GridConfig<T>
-  ): config is GridDimensions<T> {
-    return 'height' in config && config.height !== undefined;
-  }
-
-  private static configIsCellCount<T>(
-    config: GridConfig<T>
-  ): config is CellCount<T> {
-    return 'cellCount' in config && config.cellCount !== undefined;
+    if (configIsCellCount(config)) return this.validateCellCount(config);
   }
 
   //#region Config Type Validators
@@ -47,7 +29,7 @@ export class ConfigValidation {
     this.validateFillMethodParam(config.fill);
   }
 
-  //#region Config Type Param Validators
+  //#region Config Param Validators
   private static validateWidthParam(width: number) {
     if (width <= 0 || !Number.isInteger(width)) {
       throw new Error(

@@ -29,7 +29,6 @@ describe('GridArr constructor', () => {
   });
 
   describe('FilledArray config mode with invalid params', () => {
-    console.log(`ARE THEY FOOOOOOOOOOO`);
     it('should fail when width / buffer length relationship is valid', () => {
       const data = [1, 2, 3, 4, 5, 6, 12, 23, 34, 56, 100, 1000, -1, -2];
       const width = 4;
@@ -63,5 +62,31 @@ describe('GridArr constructor', () => {
         'Buffer length (12) must be cleanly divisible by provided width (5).'
       );
     });
+  });
+});
+
+describe('Grid initialisation', () => {
+  it('should set width, height and buffer when initialised with GridDimensions', () => {
+    const grid = new GridArr({ width: 5, height: 4 });
+    expect(grid.width).toBe(5);
+    expect(grid.height).toBe(4);
+    expect(grid.bufferLength).toBe(20);
+  });
+
+  it('should set width, height and buffer when initialised with CellCount', () => {
+    const grid = new GridArr({ cellCount: 20, width: 5 });
+    expect(grid.width).toBe(5);
+    expect(grid.height).toBe(4);
+    expect(grid.bufferLength).toBe(20);
+  });
+
+  it('should set width, height and buffer when initialised with FilledArray', () => {
+    const data = [
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+    ];
+    const grid = new GridArr({ width: 5, data });
+    expect(grid.width).toBe(5);
+    expect(grid.height).toBe(4);
+    expect(grid.bufferLength).toBe(20);
   });
 });
