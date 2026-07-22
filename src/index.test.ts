@@ -29,11 +29,12 @@ describe('GridArr constructor', () => {
   });
 
   describe('FilledArray config mode with invalid params', () => {
+    console.log(`ARE THEY FOOOOOOOOOOO`);
     it('should fail when width / buffer length relationship is valid', () => {
       const data = [1, 2, 3, 4, 5, 6, 12, 23, 34, 56, 100, 1000, -1, -2];
       const width = 4;
       expect(() => new GridArr<number>({ data, width })).toThrowError(
-        'Buffer length must be cleanly divisible by provided width.'
+        'Buffer length (14) must be cleanly divisible by provided width (4).'
       );
     });
   });
@@ -59,7 +60,7 @@ describe('GridArr constructor', () => {
   describe('CellCount config mode with invalid width and default fill method', () => {
     it('should fail to initialise with inva;lid width', () => {
       expect(() => new GridArr({ cellCount: 12, width: 5 })).toThrowError(
-        'Buffer length must be cleanly divisible by provided width.'
+        'Buffer length (12) must be cleanly divisible by provided width (5).'
       );
     });
   });
