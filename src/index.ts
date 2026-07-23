@@ -66,11 +66,11 @@ export class GridArr<T = DefaultCellData> {
   /**
    * Safe setter using x/y coord, with bounds checking. Throws RangeError if out of bounds.
    */
-  set(x: number, y: number, value: T, wrap?: Wrap): void {
-    if (!this.isInBounds(x, y)) {
+  set(x: number, y: number, value: T, wrapOverride?: Wrap): void {
+    if (!this.isInBounds(x, y, wrapOverride)) {
       throw new RangeError(`Coordinates (${x}, ${y}) out of bounds.`);
     }
-    this._buffer[this.toIndex(x, y)] = value;
+    this._buffer[this.toIndex(x, y, wrapOverride)] = value;
   }
 
   /**

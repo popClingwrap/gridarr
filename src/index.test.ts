@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GridArr } from './index.js';
+import { Wrap } from './grid.model.js';
 
 describe('GridArr constructor', () => {
   describe('GridDimensions config mode with default fill method', () => {
@@ -116,5 +117,114 @@ describe('toCoord() conversion method', () => {
     expect(grid.toCoord(0)).toStrictEqual({ x: 0, y: 0 });
     expect(grid.toCoord(7)).toStrictEqual({ x: 3, y: 1 });
     expect(grid.toCoord(10)).toStrictEqual({ x: 2, y: 2 });
+  });
+});
+
+describe('get(x, y, wrapOverride?) and set(x, y, wrapOverride?) methods', () => {
+  describe('get(x, y)', () => {
+    it('should return the correct value for the supplied params', () => {
+      const grid = new GridArr({ width: 4, height: 4 });
+      expect(grid.get(0, 0)).toStrictEqual({ x: 0, y: 0, index: 0 });
+      expect(grid.get(0, 0, Wrap.BOTH)).toStrictEqual({ x: 0, y: 0, index: 0 });
+      expect(grid.get(4, 1, Wrap.HORIZONTAL)).toStrictEqual({
+        x: 0,
+        y: 1,
+        index: 4,
+      });
+      expect(grid.get(4, 1, Wrap.VERTICAL)).toBe(undefined);
+      expect(grid.get(2, 6, Wrap.BOTH)).toStrictEqual({
+        x: 2,
+        y: 2,
+        index: 10,
+      });
+      expect(grid.get(-1, 0)).toBe(undefined);
+      expect(grid.get(-1, 0, Wrap.HORIZONTAL)).toStrictEqual({
+        x: 3,
+        y: 0,
+        index: 3,
+      });
+    });
+  });
+
+  describe('set(x, y)', () => {
+    it('should set the supplied value at the correct index in the buffer', () => {
+      const grid = new GridArr({ width: 4, height: 4 });
+      grid.set(0, 0, { x: 69, y: 69, index: 69 });
+      expect(grid.get(0, 0)).toStrictEqual({ x: 69, y: 69, index: 69 });
+      grid.set(-1, -1, { x: 169, y: 169, index: 169 }, Wrap.BOTH);
+      expect(grid.get(-1, -1, Wrap.BOTH)).toStrictEqual({
+        x: 169,
+        y: 169,
+        index: 169,
+      });
+    });
+
+    it('should throw an error on invalid coords', () => {
+      const grid = new GridArr({ width: 4, height: 4 });
+      expect(() => {
+        grid.set(-100, 0, { x: 269, y: 269, index: 269 });
+      }).toThrow(RangeError);
+
+      expect(() => {
+        grid.set(2, 200, { x: 269, y: 269, index: 269 });
+      }).toThrow(RangeError);
+    });
+  });
+
+  describe('get/set by index methods', () => {
+    describe('getByIndex(i)', () => {
+      it('should return the correct value for a valid index', () => {
+        const grid = new GridArr({ width: 4, height: 4 });
+        expect(grid.getByIndex(5)).toStrictEqual({ x: 1, y: 1, index: 5 });
+        expect(grid.getByIndex(-1)).toBe(undefined);
+        expect(grid.getByIndex(500)).toBe(undefined);
+      });
+    });
+
+    describe('setByIndex(i)', () => {
+      it('should set the correct value for a valid index', () => {
+        const grid = new GridArr({ width: 4, height: 4 });
+        grid.setByIndex(5, { x: 22, y: 22, index: 22 });
+        // grid.setByIndex(-1, { x: 69, y: 69, index: 69 });
+        // grid.setByIndex(500, { x: 500, y: 500, index: 500 });
+        expect(grid.getByIndex(5)).toStrictEqual({ x: 22, y: 22, index: 22 });
+        expect(() => {
+          grid.setByIndex(-1, { x: 69, y: 69, index: 69 });
+        }).toThrow(RangeError);
+        expect(() => {
+          grid.setByIndex(500, { x: 69, y: 69, index: 69 });
+        }).toThrow(RangeError);
+      });
+    });
+  });
+
+  describe('isInBounds(x, y, wrap) method', () => {
+    it('should return correct bool value for all coord/wrap combos', () => {
+      const grid = new GridArr({ width: 4, height: 4 });
+      expect(grid.isInBounds(0, 0)).toBe(true);
+      expect(grid.isInBounds(2, 2, Wrap.BOTH)).toBe(true);
+      expect(grid.isInBounds(5, 0)).toBe(false);
+      expect(grid.isInBounds(5, 0, Wrap.HORIZONTAL)).toBe(true);
+      expect(grid.isInBounds(5, 0, Wrap.VERTICAL)).toBe(false);
+    });
+  });
+
+  describe('indexIsInBounds(index: number)', () => {
+    it('should return correct bool for any valid buffer index', () => {
+      const grid = new GridArr({ width: 4, height: 4 });
+      expect(grid.indexIsInBounds(0)).toBe(true);
+      expect(grid.indexIsInBounds(10)).toBe(true);
+      expect(grid.indexIsInBounds(200)).toBe(false);
+    });
+  });
+
+  describe('normalise(val: number, max: number, shouldWrap: boolean)', () => {
+    it('should return the correct value, respecting wrapping', () => {
+      const grid = new GridArr({ width: 4, height: 4 });
+      expect(grid.normalise(2, 4, false)).toBe(2);
+      expect(grid.normalise(2, 4, true)).toBe(2);
+      expect(grid.normalise(5, 4, false)).toBe(5);
+      expect(grid.normalise(5, 4, true)).toBe(1);
+    });
   });
 });
