@@ -199,14 +199,20 @@ describe('get(x, y, wrapOverride?) and set(x, y, wrapOverride?) methods', () => 
   });
 
   describe('isInBounds(x, y, wrap) method', () => {
-    it('should return correct bool value for all coord/wrap combos', () => {
-      const grid = new GridArr({ width: 4, height: 4 });
-      expect(grid.isInBounds(0, 0)).toBe(true);
-      expect(grid.isInBounds(2, 2, Wrap.BOTH)).toBe(true);
-      expect(grid.isInBounds(5, 0)).toBe(false);
-      expect(grid.isInBounds(5, 0, Wrap.HORIZONTAL)).toBe(true);
-      expect(grid.isInBounds(5, 0, Wrap.VERTICAL)).toBe(false);
-    });
+    it.each([
+      [0, 0, Wrap.NONE, true, 'top left corner'],
+      [2, 2, Wrap.BOTH, true, 'mid grid'],
+      [5, 0, Wrap.NONE, false, 'out of bounds on the horizontal'],
+      [5, 0, Wrap.HORIZONTAL, true, 'wrap on the horizontal'],
+      [2, 5, Wrap.VERTICAL, true, 'wrap on the vertical'],
+      [-1, -1, Wrap.BOTH, true, 'negative value wrap on the both'],
+    ])(
+      'should return correct bool value for all coord/wrap combos',
+      (x, y, mode, expected, description) => {
+        const grid = new GridArr({ width: 4, height: 4 });
+        expect(grid.isInBounds(x, y, mode)).toBe(expected);
+      }
+    );
   });
 
   describe('indexIsInBounds(index: number)', () => {
@@ -227,4 +233,6 @@ describe('get(x, y, wrapOverride?) and set(x, y, wrapOverride?) methods', () => 
       expect(grid.normalise(5, 4, true)).toBe(1);
     });
   });
+
+  describe('row(i)');
 });
