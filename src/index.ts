@@ -8,6 +8,7 @@ export class GridArr<T = DefaultCellData> {
   private _height: number;
   private _wrapMode: Wrap;
 
+  /**Creates a new GridArr instance using either a prefilled array of data or the dimensions of the empty grid */
   constructor(config: GridConfig<T>) {
     ConfigValidation.validate(config);
 
@@ -64,7 +65,7 @@ export class GridArr<T = DefaultCellData> {
   }
 
   /**
-   * Safe setter using x/y coord, with bounds checking. Throws RangeError if out of bounds.
+   * Safe setter for cell value, using x/y coord, with bounds checking. Throws RangeError if out of bounds.
    */
   set(x: number, y: number, value: T, wrapOverride?: Wrap): void {
     if (!this.isInBounds(x, y, wrapOverride)) {
@@ -74,7 +75,7 @@ export class GridArr<T = DefaultCellData> {
   }
 
   /**
-   * Safe setter using x/y coord, with bounds checking. Throws RangeError if out of bounds.
+   * Safe setter for cell value, using x/y coord, with bounds checking. Throws RangeError if out of bounds.
    */
   setByIndex(index: number, value: T): void {
     if (!this.indexIsInBounds(index)) {
@@ -99,7 +100,7 @@ export class GridArr<T = DefaultCellData> {
   }
 
   /**
-   * Checks if the given (x, y) coordinate exists within grid boundaries.
+   * Checks if the given index exists within grid boundaries.
    */
   indexIsInBounds(index: number): boolean {
     return index >= 0 && index < this._buffer.length;
@@ -108,8 +109,8 @@ export class GridArr<T = DefaultCellData> {
   /**
    * Normalizes an individual coordinate axis based on whether wrapping is enabled.
    */
-  normalise(val: number, max: number, shouldWrap: boolean) {
-    return shouldWrap ? ((val % max) + max) % max : val;
+  normalise(val: number, axisMax: number, shouldWrap: boolean) {
+    return shouldWrap ? ((val % axisMax) + axisMax) % axisMax : val;
   }
 
   //#region Getters & Setters

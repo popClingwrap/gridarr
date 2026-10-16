@@ -11,7 +11,7 @@ interface ConfigBase {
 /**
  * Configured with a prepopulated array of data and the width of the grid
  */
-export interface FilledArray<T = DefaultCellData> extends ConfigBase {
+export interface FilledArrayConfig<T = DefaultCellData> extends ConfigBase {
   data: T[];
   width: number;
 }
@@ -19,7 +19,7 @@ export interface FilledArray<T = DefaultCellData> extends ConfigBase {
 /**
  * Configured with the width and height of the grid and an optional method to populate the cells
  */
-export interface GridDimensions<T = DefaultCellData> extends ConfigBase {
+export interface GridDimensionsConfig<T = DefaultCellData> extends ConfigBase {
   width: number;
   height: number;
   fill?: (index: number, x: number, y: number) => T;
@@ -35,7 +35,7 @@ export interface CellCount<T = DefaultCellData> extends ConfigBase {
 }
 
 export type GridConfig<T = DefaultCellData> =
-  FilledArray<T> | GridDimensions<T> | CellCount<T>;
+  FilledArrayConfig<T> | GridDimensionsConfig<T> | CellCount<T>;
 
 export interface BufferAllocationResult<T> {
   data: T[];

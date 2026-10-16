@@ -1,41 +1,80 @@
 import { describe, expect, it } from 'vitest';
 import { GridArr } from './index.js';
 import { Wrap } from './grid.model.js';
+import { GridArrError, GridArrErrorCode } from './error-factory.js';
 
 describe('GridArr constructor', () => {
-  describe('GridDimensions config mode with default fill method', () => {
+  describe('GridDimensionsConfig config mode with default fill method', () => {
     it('should initialise width and height with default content', () => {
       const grid = new GridArr({ width: 4, height: 5 });
-      expect(grid).toBeDefined();
+      expectGridBasics(grid, {
+        expectedWidth: 4,
+        expectedHeight: 5,
+      });
+      const sampleCoords = { x: 0, y: 0 };
+      expectShapeAtCoord(
+        grid,
+        {
+          index: 0,
+          x: sampleCoords.x,
+          y: sampleCoords.y,
+        },
+        sampleCoords
+      );
     });
   });
 
-  describe('GridDimensions config mode with explicit fill method', () => {
-    it('should initialise width and height with default content', () => {
+  describe('GridDimensionsConfig config mode with explicit fill method', () => {
+    it('should initialise width and height with "col x, row y"', () => {
       const grid = new GridArr<string>({
         width: 4,
         height: 5,
         fill: (i, x, y) => `col ${x}, row ${y}`,
       });
-      expect(grid).toBeDefined();
+
+      expectGridBasics(grid, {
+        expectedWidth: 4,
+        expectedHeight: 5,
+      });
+
+      const sampleCoords = { x: 0, y: 0 };
+      expectValueAtCoord(
+        grid,
+        `col ${sampleCoords.x}, row ${sampleCoords.y}`,
+        sampleCoords
+      );
     });
   });
 
-  describe('FilledArray config mode with valid params', () => {
+  describe('FilledArrayConfig config mode with valid params', () => {
     it('should initialise a grid with the provided content when width / buffer length relationship is valid', () => {
       const arr = [1, 2, 3, 4, 5, 6, 12, 23, 34, 56, 100, 1000, -1, -2, -3, -4];
       const grid = new GridArr<number>({ data: arr, width: 4 });
-      expect(grid).toBeDefined();
+      const sampleCoords = { x: 0, y: 0 };
+      expectGridBasics(grid, {
+        expectedWidth: 4,
+        expectedHeight: 4,
+      });
+
+      expectValueAtCoord(grid, 1, sampleCoords);
     });
   });
 
-  describe('FilledArray config mode with invalid params', () => {
-    it('should fail when width / buffer length relationship is valid', () => {
+  describe('FilledArrayConfig config mode with invalid params', () => {
+    it('should fail when width / buffer length relationship is invalid', () => {
       const data = [1, 2, 3, 4, 5, 6, 12, 23, 34, 56, 100, 1000, -1, -2];
       const width = 4;
-      expect(() => new GridArr<number>({ data, width })).toThrowError(
-        'Buffer length (14) must be cleanly divisible by provided width (4).'
-      );
+      try {
+        new GridArr<number>({ data, width });
+        expect.fail(
+          `Expected GridArrError [${GridArrErrorCode.INVALID_BUFFER_LENGTH}] to be thrown but configuration was successful`
+        );
+      } catch (err: unknown) {
+        expect(err).toBeInstanceOf(GridArrError);
+        const error = err as GridArrError;
+        expect(error.code).toBe(GridArrErrorCode.INVALID_BUFFER_LENGTH);
+        expect(error.details).toEqual({ bufferLength: 14, width: 4 });
+      }
     });
   });
 
@@ -47,7 +86,7 @@ describe('GridArr constructor', () => {
   });
 
   describe('CellCount config mode with valid width and explicit fill method', () => {
-    it('should initialise with default content', () => {
+    it('should initialise with "col x, row y"', () => {
       const grid = new GridArr({
         cellCount: 12,
         width: 4,
@@ -59,15 +98,23 @@ describe('GridArr constructor', () => {
 
   describe('CellCount config mode with invalid width and default fill method', () => {
     it('should fail to initialise with invalid width', () => {
-      expect(() => new GridArr({ cellCount: 12, width: 5 })).toThrowError(
-        'Buffer length (12) must be cleanly divisible by provided width (5).'
-      );
+      try {
+        const grid = new GridArr({ cellCount: 12, width: 5 });
+        expect.fail(
+          `Expected GridArrError [${GridArrErrorCode.INVALID_BUFFER_LENGTH}] to be thrown but configuration was successful`
+        );
+      } catch (err: unknown) {
+        expect(err).toBeInstanceOf(GridArrError);
+        const error = err as GridArrError;
+        expect(error.code).toBe(GridArrErrorCode.INVALID_BUFFER_LENGTH);
+        expect(error.details).toEqual({ bufferLength: 12, width: 5 });
+      }
     });
   });
 });
 
 describe('Grid initialisation', () => {
-  it('should set width, height and buffer when initialised with GridDimensions', () => {
+  it('should set width, height and buffer when initialised with GridDimensionsConfig', () => {
     const grid = new GridArr({ width: 5, height: 4 });
     expect(grid.width).toBe(5);
     expect(grid.height).toBe(4);
@@ -81,7 +128,7 @@ describe('Grid initialisation', () => {
     expect(grid.bufferLength).toBe(20);
   });
 
-  it('should set width, height and buffer when initialised with FilledArray', () => {
+  it('should set width, height and buffer when initialised with FilledArrayConfig', () => {
     const data = [
       0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
     ];
@@ -234,5 +281,38 @@ describe('get(x, y, wrapOverride?) and set(x, y, wrapOverride?) methods', () => 
     });
   });
 
-  describe('row(i)');
+  // describe('row(i)');
 });
+
+function expectGridBasics<T>(
+  grid: GridArr<T>,
+  params: GridBasicValidationParams
+) {
+  expect(grid).toBeDefined();
+  expect(grid.width).toBe(params.expectedWidth);
+  expect(grid.height).toBe(params.expectedHeight);
+  expect(grid.bufferLength).toBe(params.expectedWidth * params.expectedHeight);
+  expect(grid.wrapMode).toBe(params.expectedWrapMode || Wrap.NONE);
+}
+
+function expectShapeAtCoord<T>(
+  grid: GridArr<T>,
+  expectedShape: any,
+  sampleCoord: { x: number; y: number }
+) {
+  expect(grid.get(sampleCoord.x, sampleCoord.y)).toMatchObject(expectedShape);
+}
+
+function expectValueAtCoord<T>(
+  grid: GridArr<T>,
+  expectedvalue: any,
+  sampleCoord: { x: number; y: number }
+) {
+  expect(grid.get(sampleCoord.x, sampleCoord.y)).toBe(expectedvalue);
+}
+
+interface GridBasicValidationParams {
+  expectedWidth: number;
+  expectedHeight: number;
+  expectedWrapMode?: Wrap;
+}

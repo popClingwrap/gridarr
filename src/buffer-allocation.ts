@@ -1,9 +1,10 @@
+import { GridArrError, GridArrErrorCode } from './error-factory.js';
 import {
   BufferAllocationResult,
   CellCount,
-  FilledArray,
+  FilledArrayConfig,
   GridConfig,
-  GridDimensions,
+  GridDimensionsConfig,
 } from './grid.model.js';
 import {
   configIsCellCount,
@@ -18,10 +19,10 @@ export function allocateBuffer<T>(
   if (configIsFilledArray(config)) return createFromFilledArray(config);
   if (configIsCellCount(config)) return createFromCellCount(config);
 
-  throw new Error('Unexpected config data encountered');
+  throw new GridArrError(GridArrErrorCode.UNEXPECTED_CONFIG_DATA, {data:config})
 }
 
-function createFromGridDimensions<T>(config: GridDimensions<T>) {
+function createFromGridDimensions<T>(config: GridDimensionsConfig<T>) {
   const total = config.width * config.height;
   const data = new Array<T>(total);
 
@@ -36,7 +37,7 @@ function createFromGridDimensions<T>(config: GridDimensions<T>) {
   return { data, width: config.width, height: config.height };
 }
 
-function createFromFilledArray<T>(config: FilledArray<T>) {
+function createFromFilledArray<T>(config: FilledArrayConfig<T>) {
   const data = [...config.data];
   return { data, width: config.width, height: data.length / config.width };
 }

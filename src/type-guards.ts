@@ -1,19 +1,19 @@
 import {
   CellCount,
-  FilledArray,
+  FilledArrayConfig,
   GridConfig,
-  GridDimensions,
+  GridDimensionsConfig,
 } from './grid.model.js';
 
 export function configIsFilledArray<T>(
   config: GridConfig<T>
-): config is FilledArray<T> {
+): config is FilledArrayConfig<T> {
   return 'data' in config && config.data !== undefined;
 }
 
 export function configIsGridDimensions<T>(
   config: GridConfig<T>
-): config is GridDimensions<T> {
+): config is GridDimensionsConfig<T> {
   return 'height' in config && config.height !== undefined;
 }
 
