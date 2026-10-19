@@ -1,4 +1,5 @@
 import { allocateBuffer } from './buffer-allocation.js';
+import { GridArrError, GridArrErrorCode } from './error-factory.js';
 import { ConfigValidation } from './grid-validation.js';
 import { DefaultCellData, GridConfig, GridCoord, Wrap } from './grid.model.js';
 
@@ -65,21 +66,23 @@ export class GridArr<T = DefaultCellData> {
   }
 
   /**
-   * Safe setter for cell value, using x/y coord, with bounds checking. Throws RangeError if out of bounds.
+   * Safe setter for cell value, using x/y coord, with bounds checking. Throws OUT_OF_RANGE if out of bounds.
    */
   set(x: number, y: number, value: T, wrapOverride?: Wrap): void {
     if (!this.isInBounds(x, y, wrapOverride)) {
-      throw new RangeError(`Coordinates (${x}, ${y}) out of bounds.`);
+      throw new GridArrError(GridArrErrorCode.OUT_OF_RANGE, {
+        coord: { x, y },
+      });
     }
     this._buffer[this.toIndex(x, y, wrapOverride)] = value;
   }
 
   /**
-   * Safe setter for cell value, using x/y coord, with bounds checking. Throws RangeError if out of bounds.
+   * Safe setter for cell value, using x/y coord, with bounds checking. Throws OUT_OF_RANGE if out of bounds.
    */
   setByIndex(index: number, value: T): void {
     if (!this.indexIsInBounds(index)) {
-      throw new RangeError(`Index (${index}) out of bounds.`);
+      throw new GridArrError(GridArrErrorCode.OUT_OF_RANGE, { index });
     }
     this._buffer[index] = value;
   }

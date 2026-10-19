@@ -81,6 +81,7 @@ const ERROR_MESSAGE: {
   },
   [GridArrErrorCode.INVALID_PARAM_COUNT]: (d) =>
     `Expected ${d.expected} arguments, but received ${d.received}.`,
-  [GridArrErrorCode.INVALID_CELL_COUNT]:(d)=>`Parameter must be ${d.expected}, received: ${d.received}`,
+  [GridArrErrorCode.INVALID_CELL_COUNT]: (d) =>
+    `Parameter must be ${d.expected}, received: ${d.received}`,
   [GridArrErrorCode.UNKNOWN]: (d) => `An unknown error occured`,
 };

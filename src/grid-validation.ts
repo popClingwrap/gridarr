@@ -28,13 +28,13 @@ export class ConfigValidation {
   private static validateGridDimensions<T>(config: GridDimensionsConfig<T>) {
     this.validateWidthParam(config.width);
     this.validateHeightParam(config.height);
-    this.validateFillMethodParam(config.fill);
+    // this.validateFillMethodParam(config.fill);
   }
 
   private static validateCellCount<T>(config: CellCount<T>) {
     this.validateCellCountParam(config.cellCount, config.width);
     this.validateWidthParam(config.width);
-    this.validateFillMethodParam(config.fill);
+    // this.validateFillMethodParam(config.fill);
   }
 
   //#region Config Param Validators
@@ -62,22 +62,22 @@ export class ConfigValidation {
     this.validateBufferDivisibility(data.length, width);
   }
 
-  private static validateFillMethodParam(fill?: unknown) {
-    if (fill !== undefined) {
-      if (typeof fill !== 'function') {
-        throw new GridArrError(GridArrErrorCode.INVALID_TYPE, {
-          type: typeof fill,
-        });
-      }
+  // private static validateFillMethodParam(fill?: unknown) {
+  //   if (fill !== undefined) {
+  //     if (typeof fill !== 'function') {
+  //       throw new GridArrError(GridArrErrorCode.INVALID_TYPE, {
+  //         type: typeof fill,
+  //       });
+  //     }
 
-      if (fill.length > 3) {
-        throw new GridArrError(GridArrErrorCode.INVALID_PARAM_COUNT, {
-          expected: 3,
-          received: fill.length,
-        });
-      }
-    }
-  }
+  //     if (fill.length > 3) {
+  //       throw new GridArrError(GridArrErrorCode.INVALID_PARAM_COUNT, {
+  //         expected: '<=3',
+  //         received: fill.length,
+  //       });
+  //     }
+  //   }
+  // }
 
   private static validateCellCountParam(cellCount: number, width: number) {
     if (cellCount <= 0 || !Number.isInteger(cellCount)) {

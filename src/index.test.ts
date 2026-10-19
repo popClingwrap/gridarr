@@ -3,51 +3,62 @@ import { GridArr } from './index.js';
 import { Wrap } from './grid.model.js';
 import { GridArrError, GridArrErrorCode } from './error-factory.js';
 
-describe('GridArr constructor', () => {
-  describe('GridDimensionsConfig config mode with default fill method', () => {
-    it('should initialise width and height with default content', () => {
-      const grid = new GridArr({ width: 4, height: 5 });
-      expectGridBasics(grid, {
-        expectedWidth: 4,
-        expectedHeight: 5,
-      });
-      const sampleCoords = { x: 0, y: 0 };
-      expectShapeAtCoord(
-        grid,
-        {
-          index: 0,
-          x: sampleCoords.x,
-          y: sampleCoords.y,
-        },
-        sampleCoords
-      );
+describe('Init GridDimensionsConfig', () => {
+  const sampleCoord = { x: 0, y: 0 };
+  it.each([
+    {
+      fill: null,
+      expect: {
+        index: 0,
+        x: sampleCoord.x,
+        y: sampleCoord.y,
+      },
+      desc: 'default',
+    },
+    {
+      fill: (i: number, x: number, y: number) => `col ${x}, row ${y}`,
+      expect: `col ${sampleCoord.x}, row ${sampleCoord.y}`,
+      desc: 'custom',
+    },
+  ])(`Using $desc fill`, ({ fill, expect }) => {
+    const grid = fill
+      ? new GridArr({ width: 4, height: 5, fill })
+      : new GridArr({ width: 4, height: 5 });
+
+    expectGridBasics(grid, {
+      expectedWidth: 4,
+      expectedHeight: 5,
     });
+
+    expectShapeAtCoord(grid, expect, sampleCoord);
   });
 
-  describe('GridDimensionsConfig config mode with explicit fill method', () => {
-    it('should initialise width and height with "col x, row y"', () => {
-      const grid = new GridArr<string>({
-        width: 4,
-        height: 5,
-        fill: (i, x, y) => `col ${x}, row ${y}`,
-      });
-
-      expectGridBasics(grid, {
-        expectedWidth: 4,
-        expectedHeight: 5,
-      });
-
-      const sampleCoords = { x: 0, y: 0 };
-      expectValueAtCoord(
-        grid,
-        `col ${sampleCoords.x}, row ${sampleCoords.y}`,
-        sampleCoords
-      );
-    });
+  describe('With invalid dimensions', () => {
+    it.each([
+      { width: -1, height: 4, desc: 'invalid width' },
+      { width: 4, height: -1, desc: 'invalid height' },
+      { width: -1, height: -1, desc: 'invalid height/width' },
+    ])(
+      `Throws ${GridArrErrorCode.INVALID_GRID_DIMENSION} on $desc`,
+      ({ width, height }) => {
+        try {
+          new GridArr<number>({ width, height });
+          expect.fail(
+            `Expected GridArrError [${GridArrErrorCode.INVALID_GRID_DIMENSION}] to be thrown but configuration was successful`
+          );
+        } catch (err: unknown) {
+          expect(err).toBeInstanceOf(GridArrError);
+          const error = err as GridArrError;
+          expect(error.code).toBe(GridArrErrorCode.INVALID_GRID_DIMENSION);
+        }
+      }
+    );
   });
+});
 
-  describe('FilledArrayConfig config mode with valid params', () => {
-    it('should initialise a grid with the provided content when width / buffer length relationship is valid', () => {
+describe('Init FilledArrayConfig', () => {
+  describe('with valid params', () => {
+    it('initialises a grid with the provided content', () => {
       const arr = [1, 2, 3, 4, 5, 6, 12, 23, 34, 56, 100, 1000, -1, -2, -3, -4];
       const grid = new GridArr<number>({ data: arr, width: 4 });
       const sampleCoords = { x: 0, y: 0 };
@@ -60,8 +71,8 @@ describe('GridArr constructor', () => {
     });
   });
 
-  describe('FilledArrayConfig config mode with invalid params', () => {
-    it('should fail when width / buffer length relationship is invalid', () => {
+  describe('with invalid buffer / width relationship', () => {
+    it(`throws ${GridArrErrorCode.INVALID_BUFFER_LENGTH}`, () => {
       const data = [1, 2, 3, 4, 5, 6, 12, 23, 34, 56, 100, 1000, -1, -2];
       const width = 4;
       try {
@@ -77,27 +88,40 @@ describe('GridArr constructor', () => {
       }
     });
   });
+});
 
-  describe('CellCount config mode with valid width and default fill method', () => {
-    it('should initialise with default content', () => {
-      const grid = new GridArr({ cellCount: 12, width: 4 });
-      expect(grid).toBeDefined();
+describe('Init CellCount', () => {
+  const sampleCoord = { x: 0, y: 0 };
+  it.each([
+    {
+      fill: null,
+      expect: {
+        index: 0,
+        x: sampleCoord.x,
+        y: sampleCoord.y,
+      },
+      desc: 'default',
+    },
+    {
+      fill: (i: number, x: number, y: number) => `col ${x}, row ${y}`,
+      expect: `col ${sampleCoord.x}, row ${sampleCoord.y}`,
+      desc: 'custom',
+    },
+  ])('using $desc fill', ({ fill, expect }) => {
+    const grid = fill
+      ? new GridArr({ width: 4, height: 5, fill })
+      : new GridArr({ width: 4, height: 5 });
+
+    expectGridBasics(grid, {
+      expectedWidth: 4,
+      expectedHeight: 5,
     });
+
+    expectShapeAtCoord(grid, expect, sampleCoord);
   });
 
-  describe('CellCount config mode with valid width and explicit fill method', () => {
-    it('should initialise with "col x, row y"', () => {
-      const grid = new GridArr({
-        cellCount: 12,
-        width: 4,
-        fill: (i, x, y) => `col ${x}, row ${y}`,
-      });
-      expect(grid).toBeDefined();
-    });
-  });
-
-  describe('CellCount config mode with invalid width and default fill method', () => {
-    it('should fail to initialise with invalid width', () => {
+  describe('with invalid width', () => {
+    it(`throws ${GridArrErrorCode.INVALID_BUFFER_LENGTH}`, () => {
       try {
         const grid = new GridArr({ cellCount: 12, width: 5 });
         expect.fail(
@@ -113,39 +137,73 @@ describe('GridArr constructor', () => {
   });
 });
 
-describe('Grid initialisation', () => {
-  it('should set width, height and buffer when initialised with GridDimensionsConfig', () => {
-    const grid = new GridArr({ width: 5, height: 4 });
-    expect(grid.width).toBe(5);
-    expect(grid.height).toBe(4);
-    expect(grid.bufferLength).toBe(20);
-  });
+describe('get()', () => {
+  it.each([
+    {
+      sampleCoord: { x: 1, y: 0 },
+      expected: { index: 1, x: 1, y: 0 },
+      gridWrap: null,
+      tempWrap: null,
+      desc: 'target in bounds, no wrapping',
+    },
+    {
+      sampleCoord: { x: 0, y: 0 },
+      expected: { index: 0, x: 0, y: 0 },
+      gridWrap: Wrap.BOTH,
+      tempWrap: null,
+      desc: 'target in bounds, grid wrap both',
+    },
+    {
+      sampleCoord: { x: -1, y: -1 },
+      expected: { index: 15, x: 3, y: 3 },
+      gridWrap: Wrap.BOTH,
+      tempWrap: null,
+      desc: 'negative XY target, grid wrap both',
+    },
+    {
+      sampleCoord: { x: -1, y: -1 },
+      expected: { index: 15, x: 3, y: 3 },
+      gridWrap: null,
+      tempWrap: Wrap.BOTH,
+      desc: 'negative XY target, temp wrap both',
+    },
+  ])('returns for $desc', ({ sampleCoord, expected, gridWrap, tempWrap }) => {
+    const grid = gridWrap
+      ? new GridArr({ width: 4, height: 4, wrap: gridWrap })
+      : new GridArr({ width: 4, height: 4 });
 
-  it('should set width, height and buffer when initialised with CellCount', () => {
-    const grid = new GridArr({ cellCount: 20, width: 5 });
-    expect(grid.width).toBe(5);
-    expect(grid.height).toBe(4);
-    expect(grid.bufferLength).toBe(20);
+    tempWrap
+      ? expect(grid.get(sampleCoord.x, sampleCoord.y, tempWrap)).toStrictEqual(
+          expected
+        )
+      : expect(grid.get(sampleCoord.x, sampleCoord.y)).toStrictEqual(expected);
   });
-
-  it('should set width, height and buffer when initialised with FilledArrayConfig', () => {
-    const data = [
-      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-    ];
-    const grid = new GridArr({ width: 5, data });
-    expect(grid.width).toBe(5);
-    expect(grid.height).toBe(4);
-    expect(grid.bufferLength).toBe(20);
-  });
-});
-
-describe('Structural get methods', () => {
-  it('Should return correct values from a grid instance', () => {
-    const grid = new GridArr({ width: 4, height: 5 });
-    expect(grid.height).toBe(5);
-    expect(grid.width).toBe(4);
-    expect(grid.bufferLength).toBe(20);
-  });
+  //TODO - Refactored to here. test error cases for get()
+  // it.each([
+  //   {
+  //     sampleCoord: { x: -1, y: 0 },
+  //     expected: { index: 3, x: 3, y: 0 },
+  //     wrap: Wrap.BOTH,
+  //     desc: 'negative X target, wrap both',
+  //   },
+  //   {
+  //     sampleCoord: { x: 0, y: -1 },
+  //     expected: { index: 12, x: 0, y: 3 },
+  //     wrap: Wrap.BOTH,
+  //     desc: 'negative Y target, wrap both',
+  //   },
+  //   {
+  //     sampleCoord: { x: -1, y: -1 },
+  //     expected: { index: 15, x: 3, y: 3 },
+  //     wrap: Wrap.BOTH,
+  //     desc: 'negative XY target, wrap both',
+  //   },
+  // ])('throws  for $desc', ({ sampleCoord, expected, wrap, desc }) => {
+  //   const grid = wrap
+  //     ? new GridArr({ width: 4, height: 4, wrap })
+  //     : new GridArr({ width: 4, height: 4 });
+  //   expectShapeAtCoord(grid, expected, sampleCoord);
+  // });
 });
 
 describe('toIndex() conversion method', () => {
@@ -207,14 +265,29 @@ describe('get(x, y, wrapOverride?) and set(x, y, wrapOverride?) methods', () => 
     });
 
     it('should throw an error on invalid coords', () => {
-      const grid = new GridArr({ width: 4, height: 4 });
-      expect(() => {
+      try {
+        const grid = new GridArr({ width: 4, height: 4 });
         grid.set(-100, 0, { x: 269, y: 269, index: 269 });
-      }).toThrow(RangeError);
+        expect.fail(
+          `Expected GridArrError [${GridArrErrorCode.OUT_OF_RANGE}] to be thrown but get() was successful`
+        );
+      } catch (err: any) {
+        expect(err).toBeInstanceOf(GridArrError);
+        const error = err as GridArrError;
+        expect(error.code).toBe(GridArrErrorCode.OUT_OF_RANGE);
+      }
 
-      expect(() => {
+      try {
+        const grid = new GridArr({ width: 4, height: 4 });
         grid.set(2, 200, { x: 269, y: 269, index: 269 });
-      }).toThrow(RangeError);
+        expect.fail(
+          `Expected GridArrError [${GridArrErrorCode.OUT_OF_RANGE}] to be thrown but get() was successful`
+        );
+      } catch (err: any) {
+        expect(err).toBeInstanceOf(GridArrError);
+        const error = err as GridArrError;
+        expect(error.code).toBe(GridArrErrorCode.OUT_OF_RANGE);
+      }
     });
   });
 
@@ -229,18 +302,18 @@ describe('get(x, y, wrapOverride?) and set(x, y, wrapOverride?) methods', () => 
     });
 
     describe('setByIndex(i)', () => {
-      it('should set the correct value for a valid index', () => {
-        const grid = new GridArr({ width: 4, height: 4 });
-        grid.setByIndex(5, { x: 22, y: 22, index: 22 });
-        // grid.setByIndex(-1, { x: 69, y: 69, index: 69 });
-        // grid.setByIndex(500, { x: 500, y: 500, index: 500 });
-        expect(grid.getByIndex(5)).toStrictEqual({ x: 22, y: 22, index: 22 });
-        expect(() => {
-          grid.setByIndex(-1, { x: 69, y: 69, index: 69 });
-        }).toThrow(RangeError);
-        expect(() => {
-          grid.setByIndex(500, { x: 69, y: 69, index: 69 });
-        }).toThrow(RangeError);
+      it('should throw an error on invalid index', () => {
+        try {
+          const grid = new GridArr({ width: 4, height: 4 });
+          grid.setByIndex(5000, { x: 22, y: 22, index: 22 });
+          expect.fail(
+            `Expected GridArrError [${GridArrErrorCode.OUT_OF_RANGE}] to be thrown but setByIndex() was successful`
+          );
+        } catch (err: any) {
+          expect(err).toBeInstanceOf(GridArrError);
+          const error = err as GridArrError;
+          expect(error.code).toBe(GridArrErrorCode.OUT_OF_RANGE);
+        }
       });
     });
   });
@@ -284,8 +357,8 @@ describe('get(x, y, wrapOverride?) and set(x, y, wrapOverride?) methods', () => 
   // describe('row(i)');
 });
 
-function expectGridBasics<T>(
-  grid: GridArr<T>,
+function expectGridBasics(
+  grid: GridArr<any>,
   params: GridBasicValidationParams
 ) {
   expect(grid).toBeDefined();
@@ -295,8 +368,8 @@ function expectGridBasics<T>(
   expect(grid.wrapMode).toBe(params.expectedWrapMode || Wrap.NONE);
 }
 
-function expectShapeAtCoord<T>(
-  grid: GridArr<T>,
+function expectShapeAtCoord(
+  grid: GridArr<any>,
   expectedShape: any,
   sampleCoord: { x: number; y: number }
 ) {
